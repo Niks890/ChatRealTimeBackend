@@ -8,4 +8,16 @@ use Illuminate\Database\Eloquent\Model;
 class Role extends Model
 {
     use HasFactory;
+    protected $fillable = [
+        'name',
+        'description',
+    ];
+
+    public function user_role()
+    {
+        return $this->hasMany(UserRole::class);
+    }
+    protected $hidden = [
+        'laravel_through_key',
+    ];
 }

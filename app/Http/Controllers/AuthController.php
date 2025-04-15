@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserRegisterRequest;
+use App\Models\Role;
 use App\Models\User;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -16,17 +18,97 @@ use Illuminate\Support\Str;
 class AuthController extends Controller
 {
 
+    // public function register(UserRegisterRequest $request)
+    // {
+    //     $validateData = $request->validated();
+
+    //     DB::beginTransaction();
+
+    //     try {
+    //         $user = User::create([
+    //             'name' => $validateData['name'],
+    //             'email' => $validateData['email'],
+    //             'password' => bcrypt($validateData['password']),
+    //         ]);
+    //         // Gán quyền mặc định, ví dụ role "user"
+    //         $defaultRoleId = Role::where('name', 'user')->value('id');
+
+    //         if ($defaultRoleId) {
+    //             DB::table('user_roles')->insert([
+    //                 'user_id' => $user->id,
+    //                 'role_id' => $defaultRoleId,
+    //             ]);
+    //         }
+    //         DB::commit();
+    //         // Nếu bạn đang dùng JWT Auth
+    //         $token = auth('api')->login($user);
+    //         return $this->respondWithToken($token);
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         return response()->json([
+    //             'message' => 'Đăng ký thất bại',
+    //             'error' => $e->getMessage(), // Lỗi chính
+    //             'trace' => $e->getTraceAsString(), // Stack trace để kiểm tra chi tiết lỗi
+    //         ], 500);
+    //     }
+    // }
+
+
+
     public function register(UserRegisterRequest $request)
     {
         $validateData = $request->validated();
 
-        $user = User::create([
-            'name' => $validateData['name'],
-            'email' => $validateData['email'],
-            'password' => bcrypt($validateData['password']),
-        ]);
-        $token = auth('api')->login($user);
-        return $this->respondWithToken($token);
+        DB::beginTransaction();
+
+        try {
+            $user = User::create([
+                'name' => $validateData['name'],
+                'email' => $validateData['email'],
+                'password' => bcrypt($validateData['password']),
+            ]);
+
+            // Gán role mặc định
+            $defaultRoleId = Role::where('name', 'user')->value('id');
+            if ($defaultRoleId) {
+                DB::table('user_roles')->insert([
+                    'user_id' => $user->id,
+                    'role_id' => $defaultRoleId,
+                ]);
+            }
+
+            DB::commit();
+            // Tạo token JWT cho người dùng mới
+            // $token = auth('api')->login($user);
+
+            // Gửi email xác minh
+            // event(new Registered($user));
+            // Lưu token vào cookie
+            $cookieLifetime = 10;  // Thời gian sống của cookie (10 phút)
+
+            // $accessTokenCookie = cookie(
+            //     'access_token',
+            //     $token,
+            //     $cookieLifetime,
+            //     '/',
+            //     'localhost',  // Đặt domain là 127.0.0.1
+            //     // null,
+            //     false,        // Không bắt buộc HTTPS
+            //     true,         // HttpOnly
+            //     false,        // Không ép buộc sử dụng cùng miền
+            //     'Lax'         // SameSite
+            // );
+
+            return response()->json([
+                'message' => 'Đăng ký thành công! Vui lòng kiểm tra email để xác minh tài khoản.',
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Đăng ký thất bại',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function login(Request $request)
@@ -62,6 +144,9 @@ class AuthController extends Controller
             false,        // Không ép buộc sử dụng cùng miền
             'Lax'         // SameSite
         );
+        // if (! $user->hasVerifiedEmail()) {
+        //     return response()->json(['message' => 'Email chưa xác minh'], 403);
+        // }
         return response()->json([
             'message' => 'Login success',
         ])->withCookie($accessTokenCookie);
@@ -71,7 +156,8 @@ class AuthController extends Controller
 
     public function me()
     {
-        return response()->json(auth('api')->user());
+        $user = User::with('roles')->find(auth('api')->id());
+        return response()->json($user);
     }
 
     public function logout()
@@ -91,13 +177,22 @@ class AuthController extends Controller
     }
 
 
+    // protected function respondWithToken($token)
+    // {
+    //     return response()->json([
+    //         'access_token' => $token,
+    //         'token_type' => 'bearer',
+    //         'expires_in' => auth('api')->Config::get('jwt.ttl') * 60
+    //     ])->header('Authorization', 'Bearer ' . $token);
+    // }
     protected function respondWithToken($token)
     {
         return response()->json([
             'access_token' => $token,
             'token_type' => 'bearer',
-            'expires_in' => auth('api')->Config::get('jwt.ttl') * 60
-        ])->header('Authorization', 'Bearer ' . $token);
+            'expires_in' => auth('api')->factory()->getTTL() * 1
+            // 'expires_in' => auth()->factory()->getTTL() * 60
+        ]);
     }
 
 
