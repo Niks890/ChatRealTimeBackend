@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CloudinaryUploadController;
+use App\Http\Controllers\MessageSentController;
+use App\Models\Message;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -68,6 +70,8 @@ Route::post('/email/resend', function (Request $request) {
 
     return response()->json(['message' => 'Link xác minh đã được gửi lại']);
 })->middleware(['auth:api']);
+
+Route::post('/send-message', [MessageSentController::class, 'sendMessage']);
 
 
 
