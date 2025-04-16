@@ -78,26 +78,10 @@ class AuthController extends Controller
             }
 
             DB::commit();
-            // Tạo token JWT cho người dùng mới
-            // $token = auth('api')->login($user);
 
             // Gửi email xác minh
-            // event(new Registered($user));
-            // Lưu token vào cookie
-            $cookieLifetime = 10;  // Thời gian sống của cookie (10 phút)
+            event(new Registered($user));
 
-            // $accessTokenCookie = cookie(
-            //     'access_token',
-            //     $token,
-            //     $cookieLifetime,
-            //     '/',
-            //     'localhost',  // Đặt domain là 127.0.0.1
-            //     // null,
-            //     false,        // Không bắt buộc HTTPS
-            //     true,         // HttpOnly
-            //     false,        // Không ép buộc sử dụng cùng miền
-            //     'Lax'         // SameSite
-            // );
 
             return response()->json([
                 'message' => 'Đăng ký thành công! Vui lòng kiểm tra email để xác minh tài khoản.',
@@ -185,15 +169,17 @@ class AuthController extends Controller
     //         'expires_in' => auth('api')->Config::get('jwt.ttl') * 60
     //     ])->header('Authorization', 'Bearer ' . $token);
     // }
-    protected function respondWithToken($token)
-    {
-        return response()->json([
-            'access_token' => $token,
-            'token_type' => 'bearer',
-            'expires_in' => auth('api')->factory()->getTTL() * 1
-            // 'expires_in' => auth()->factory()->getTTL() * 60
-        ]);
-    }
+
+
+    // protected function respondWithToken($token)
+    // {
+    //     return response()->json([
+    //         'access_token' => $token,
+    //         'token_type' => 'bearer',
+    //         'expires_in' => auth('api')->factory()->getTTL() * 1
+    //         // 'expires_in' => auth()->factory()->getTTL() * 60
+    //     ]);
+    // }
 
 
 

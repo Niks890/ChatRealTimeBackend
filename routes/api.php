@@ -41,22 +41,34 @@ Route::middleware('auth:api')->group(function () {
 
 
 
-Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-    $request->fulfill(); // Đánh dấu đã xác minh
-    // Chuyển hướng người dùng đến frontend sau khi xác minh
-    return redirect(config('app.frontend_url') . '/verify-account');
-})->middleware(['signed'])->name('verification.verify');
 
 // Gửi lại link xác minh
+// Route::post('/email/resend', function (Request $request) {
+//     if ($request->user()->hasVerifiedEmail()) {
+//         return response()->json(['message' => 'Email đã xác minh']);
+//     }
+
+//     $request->user()->sendEmailVerificationNotification();
+
+//     return response()->json(['message' => 'Link xác minh đã được gửi lại']);
+// })->middleware(['auth:api']);
+
 Route::post('/email/resend', function (Request $request) {
-    if ($request->user()->hasVerifiedEmail()) {
+    $user = $request->user();
+
+    if (!$user) {
+        return response()->json(['message' => 'Người dùng chưa đăng nhập'], 401);
+    }
+
+    if ($user->hasVerifiedEmail()) {
         return response()->json(['message' => 'Email đã xác minh']);
     }
 
-    $request->user()->sendEmailVerificationNotification();
+    $user->sendEmailVerificationNotification();
 
     return response()->json(['message' => 'Link xác minh đã được gửi lại']);
 })->middleware(['auth:api']);
+
 
 
 

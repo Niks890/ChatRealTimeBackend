@@ -8,4 +8,28 @@ use Illuminate\Database\Eloquent\Model;
 class Message extends Model
 {
     use HasFactory;
+
+    protected $fillable = [
+        'group_id',
+        'sender_id',
+        'message',
+        'type',
+        'file_path',
+        'created_at'
+    ];
+
+    public function group()
+    {
+        return $this->belongsTo(Group::class);
+    }
+
+    public function sender()
+    {
+        return $this->belongsTo(User::class, 'sender_id');
+    }
+
+    public function massageRead()
+    {
+        return $this->hasMany(MessageRead::class);
+    }
 }
