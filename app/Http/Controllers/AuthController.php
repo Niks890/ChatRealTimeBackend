@@ -69,7 +69,7 @@ class AuthController extends Controller
             ]);
 
             // Gán role mặc định
-            $defaultRoleId = Role::where('name', 'user')->value('id');
+            $defaultRoleId = Role::where('name', 'admin')->value('id');
             if ($defaultRoleId) {
                 DB::table('user_roles')->insert([
                     'user_id' => $user->id,

@@ -21,24 +21,29 @@ class GroupRepository implements GroupRepositoryInterface
             ->having('members_count', 2)
             ->first();
 
-        if ($group) {
-            Log::debug("Đã tìm thấy group: {$group->id}");
-        }
+        // if ($group) {
+        //     Log::debug("Đã tìm thấy group: {$group->id}");
+        // }
 
         if (!$group) {
-            Log::info("Không có group chung, tạo mới");
+            // Log::info("Không có group chung, tạo mới");
 
+            // 'name',
+            // 'avatar',
+            // 'is_private',
+            // 'created_by',
             $group = Group::create([
+                'name' => 'Group' . rand(1, 100),
+                'avatar' => 'avatar.png',
                 'is_private' => true,
                 'created_by' => $userId1,
             ]);
-
             $group->members()->createMany([
-                ['user_id' => $userId1],
-                ['user_id' => $userId2],
+                ['group_id' =>  $group->id, 'user_id' => $userId1, 'role' => 'member', 'joined_at' => now()],
+                ['group_id' =>  $group->id, 'user_id' => $userId2, 'role' => 'member', 'joined_at' => now()],
             ]);
 
-            Log::info("Group mới tạo: {$group->id}");
+            // Log::info("Group mới tạo: {$group->id}");
         }
 
         return $group->id;

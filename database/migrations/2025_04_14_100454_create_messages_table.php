@@ -19,6 +19,7 @@ return new class extends Migration
             $table->enum('type', ['text', 'image', 'file'])->default('text');
             $table->string('file_path')->nullable();
             $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent();
         });
     }
 

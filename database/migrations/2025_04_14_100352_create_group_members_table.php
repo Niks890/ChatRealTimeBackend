@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->onDelete('no action');
             $table->enum('role', ['admin', 'member'])->default('member');
             $table->timestamp('joined_at')->useCurrent();
+            $table->timestamps();
         });
     }
 

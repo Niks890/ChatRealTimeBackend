@@ -35,7 +35,16 @@ class MessageSent implements ShouldBroadcast
     }
     public function broadcastWith()
     {
-        Log::info('Broadcast dữ liệu:', ['message' => $this->message]);
+        // Log::info('Broadcast dữ liệu:', ['message' => $this->message]);
         return ['message' => $this->message];
+
+        // return [
+        //     'message' => $this->message->message,
+        //     'sender_id' => $this->message->sender_id,
+        //     'group_id' => $this->message->group_id,
+        //     'file_path' => $this->message->file_path,
+        //     'type' => $this->message->type,
+        //     'created_at' => $this->message->created_at->toDateTimeString(),
+        // ];
     }
 }
