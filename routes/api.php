@@ -2,7 +2,10 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CloudinaryUploadController;
+use App\Http\Controllers\GroupController;
+use App\Http\Controllers\MessageController;
 use App\Http\Controllers\MessageSentController;
+use App\Http\Controllers\UserController;
 use App\Models\Message;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -40,40 +43,25 @@ Route::middleware('auth:api')->group(function () {
     Route::post('refresh', [AuthController::class, 'refresh']);
 });
 
-
-
-
-
-// Gửi lại link xác minh
-// Route::post('/email/resend', function (Request $request) {
-//     if ($request->user()->hasVerifiedEmail()) {
-//         return response()->json(['message' => 'Email đã xác minh']);
-//     }
-
-//     $request->user()->sendEmailVerificationNotification();
-
-//     return response()->json(['message' => 'Link xác minh đã được gửi lại']);
-// })->middleware(['auth:api']);
-
 Route::post('/email/resend', function (Request $request) {
     $user = $request->user();
-
     if (!$user) {
         return response()->json(['message' => 'Người dùng chưa đăng nhập'], 401);
     }
-
     if ($user->hasVerifiedEmail()) {
         return response()->json(['message' => 'Email đã xác minh']);
     }
-
     $user->sendEmailVerificationNotification();
-
     return response()->json(['message' => 'Link xác minh đã được gửi lại']);
 })->middleware(['auth:api']);
 
 Route::post('/send-message', [MessageSentController::class, 'sendMessage']);
-
-
-
-
 Route::post('/upload', [CloudinaryUploadController::class, 'upload'])->name('api.upload');
+
+//USER API
+Route::get('/users', [UserController::class, 'getAllUsersExceptCurrentUser'])->name('api.users');
+
+
+//MESSAGE API
+Route::post('/messages', [MessageController::class, 'getAllMessageOfTwoUser'])->name('api.messages');
+Route::post('/group-id', [GroupController::class, 'getGroupId'])->name('api.group-id');
