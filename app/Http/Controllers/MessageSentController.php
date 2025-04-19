@@ -5,57 +5,55 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Events\MessageSent;
 use App\Models\Message;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 class MessageSentController extends Controller
 {
-    // public function sendMessage(Request $request)
-    // {
-    //     // Validate dữ liệu tin nhắn (nếu cần)
-    //     $request->validate([
-    //         'message' => 'required|string',
-    //     ]);
 
-    //     $message = $request->input('message');
-
-    //     // Gửi event MessageSent và broadcast tin nhắn đến những người dùng khác
-    //     broadcast(new MessageSent($message))->toOthers();
-
-    //     return response()->json(['status' => 'sent']);
-    // }
 
     public function sendMessage(Request $request)
     {
-        // $request->validate([
-        //     'message' => 'required|string',
-        //     'group_id' => 'required|integer',
-        // ]);
-
-
-        $message = $request->input('message');
+        $messageText = $request->input('message');
         $groupId = $request->input('group_id');
         $senderId = $request->input('user_id');
 
-
-        // Lưu vào DB
-        Message::create([
+        // Lưu tin nhắn vào DB
+        $newMessage = Message::create([
             'group_id' => $groupId,
             'sender_id' => $senderId,
-            'message' => $message,
+            'message' => $messageText,
             'type' => 'text',
-            'file_path' => 'anh.png',
+            'file_path' => null,
             'created_at' => now(),
         ]);
 
+        // Lấy tên người gửi (tuỳ bạn lưu như thế nào, ví dụ có quan hệ messages.sender)
+        $senderName = User::find($senderId)?->name ?? 'Không rõ';
 
-        // Broadcast tin nhắn
-        // broadcast(new MessageSent([
-        //     'message' => $message,
-        //     // 'sender_id' => $message->sender_id,
-        //     // 'created_at' => $message->created_at->toDateTimeString(),
-        // ]))->toOthers();
-        broadcast(new MessageSent($message))->toOthers();
+        $formatted = [
+            'content' => $newMessage->message,
+            'type' => 'sent', // frontend sẽ dùng cái này
+            'senderName' => $senderName,
+            'createdAt' => $newMessage->created_at->toISOString(),
 
-        return response()->json(['status' => 'sent']);
+        ];
+
+        broadcast(new MessageSent([
+            'message' => $newMessage->message,
+            'sender_id' => $senderId,
+            'senderName' => $senderName,
+            'group_id' => $groupId,
+            'created_at' => $newMessage->created_at->toISOString(),
+            'file_path' => $newMessage->file_path,
+            'type' => 'sent' // hoặc 'received' tuỳ người nhận
+        ]))->toOthers();
+
+
+        // Trả về đầy đủ tin nhắn cho FE hiển thị
+        return response()->json([
+            'success' => true,
+            'message' => $formatted
+        ]);
     }
 }

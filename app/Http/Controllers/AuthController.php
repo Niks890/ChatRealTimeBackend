@@ -147,6 +147,7 @@ class AuthController extends Controller
     public function logout()
     {
         auth()->logout();
+        // auth()->user()->update(['status' => 'offline']);
         // Xóa cookie access_token
         $forgetCookie = cookie()->forget('access_token');
         return response()->json(['message' => 'Successfully logged out'])->withCookie($forgetCookie);
