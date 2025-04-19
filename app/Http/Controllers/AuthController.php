@@ -18,43 +18,6 @@ use Illuminate\Support\Str;
 class AuthController extends Controller
 {
 
-    // public function register(UserRegisterRequest $request)
-    // {
-    //     $validateData = $request->validated();
-
-    //     DB::beginTransaction();
-
-    //     try {
-    //         $user = User::create([
-    //             'name' => $validateData['name'],
-    //             'email' => $validateData['email'],
-    //             'password' => bcrypt($validateData['password']),
-    //         ]);
-    //         // Gán quyền mặc định, ví dụ role "user"
-    //         $defaultRoleId = Role::where('name', 'user')->value('id');
-
-    //         if ($defaultRoleId) {
-    //             DB::table('user_roles')->insert([
-    //                 'user_id' => $user->id,
-    //                 'role_id' => $defaultRoleId,
-    //             ]);
-    //         }
-    //         DB::commit();
-    //         // Nếu bạn đang dùng JWT Auth
-    //         $token = auth('api')->login($user);
-    //         return $this->respondWithToken($token);
-    //     } catch (\Exception $e) {
-    //         DB::rollBack();
-    //         return response()->json([
-    //             'message' => 'Đăng ký thất bại',
-    //             'error' => $e->getMessage(), // Lỗi chính
-    //             'trace' => $e->getTraceAsString(), // Stack trace để kiểm tra chi tiết lỗi
-    //         ], 500);
-    //     }
-    // }
-
-
-
     public function register(UserRegisterRequest $request)
     {
         $validateData = $request->validated();
@@ -113,9 +76,14 @@ class AuthController extends Controller
             return response()->json(['error' => 'Sai email hoặc mật khẩu!'], 401);
         }
 
+        $user = auth('api')->user();
+        if (!$user) {
+            return response()->json(['error' => 'Không tìm thấy người dùng!'], 404);
+        }
+        $user->update(['status' => 'online']);
+
         // Đặt thời gian sống của cookie (10p)
         $cookieLifetime = 10;
-
         $accessTokenCookie = cookie(
             'access_token',
             $token,
@@ -146,8 +114,12 @@ class AuthController extends Controller
 
     public function logout()
     {
+        $user = auth('api')->user();
+        if ($user) {
+            // Cập nhật trạng thái của người dùng thành offline
+            $user->update(['status' => 'offline']);
+        }
         auth()->logout();
-        // auth()->user()->update(['status' => 'offline']);
         // Xóa cookie access_token
         $forgetCookie = cookie()->forget('access_token');
         return response()->json(['message' => 'Successfully logged out'])->withCookie($forgetCookie);
