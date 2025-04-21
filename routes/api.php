@@ -41,6 +41,7 @@ Route::middleware('auth:api')->group(function () {
     Route::post('me', [AuthController::class, 'me']);
     Route::post('logout', [AuthController::class, 'logout']);
     Route::post('refresh', [AuthController::class, 'refresh']);
+    // Route::post('/ping', [UserController::class, 'pingToUser']);
 });
 
 Route::post('/email/resend', function (Request $request) {

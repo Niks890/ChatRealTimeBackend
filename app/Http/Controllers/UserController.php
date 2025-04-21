@@ -19,4 +19,9 @@ class UserController extends Controller
         $users = $this->userRepo->all($currentUserId);
         return $this->apiStatus($users, 200, $users->count());
     }
+
+    // public function pingToUser()
+    // {
+    //     return $this->userRepo->ping();
+    // }
 }

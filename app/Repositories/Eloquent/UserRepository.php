@@ -32,4 +32,16 @@ class UserRepository implements UserRepositoryInterface
     {
         return User::destroy($id);
     }
+
+    // app/Http/Controllers/UserController.php
+    // public function ping()
+    // {
+    //     $user = auth('api')->user();
+    //     if ($user) {
+    //         $user->update(['last_seen' => now()]);
+    //         return response()->json(['message' => 'Ping updated']);
+    //     }
+
+    //     return response()->json(['message' => 'User not found'], 404);
+    // }
 }

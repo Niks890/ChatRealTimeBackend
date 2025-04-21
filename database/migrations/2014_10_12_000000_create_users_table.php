@@ -21,6 +21,7 @@ return new class extends Migration
             $table->enum('status', ['online', 'offline'])->default('offline');
             $table->rememberToken();
             $table->timestamps();
+            $table->timestamp('last_seen')->nullable();
         });
     }
 

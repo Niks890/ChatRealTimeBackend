@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\UserOnline;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserRegisterRequest;
 use App\Models\Role;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
@@ -80,7 +82,9 @@ class AuthController extends Controller
         if (!$user) {
             return response()->json(['error' => 'Không tìm thấy người dùng!'], 404);
         }
-        $user->update(['status' => 'online']);
+        $user->update(['status' => 'online', 'last_seen' => Carbon::now()]);
+        event(new UserOnline($user->id, 'online', Carbon::now()));
+
 
         // Đặt thời gian sống của cookie (10p)
         $cookieLifetime = 10;
@@ -117,7 +121,10 @@ class AuthController extends Controller
         $user = auth('api')->user();
         if ($user) {
             // Cập nhật trạng thái của người dùng thành offline
-            $user->update(['status' => 'offline']);
+            // $user->update(['status' => 'offline']);
+            $user->update(['status' => 'offline', 'last_seen' => Carbon::now()]);
+
+            event(new UserOnline($user->id, 'offline', Carbon::now()));
         }
         auth()->logout();
         // Xóa cookie access_token
