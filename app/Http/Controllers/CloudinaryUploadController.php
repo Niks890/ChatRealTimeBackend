@@ -20,10 +20,22 @@ class CloudinaryUploadController extends Controller
         return view('welcome');
     }
 
+    // public function upload(Request $request)
+    // {
+    //     $file = $request->file('image');
+
+    //     $uploadResponse = $this->cloudinaryService->uploadImage($file->getPathname());
+
+    //     return response()->json($uploadResponse);
+    // }
+
     public function upload(Request $request)
     {
-        $file = $request->file('image');
+        $request->validate([
+            'image' => 'required|file|image|max:2048', // Kiểm tra file ảnh có hợp lệ không
+        ]);
 
+        $file = $request->file('image');
         $uploadResponse = $this->cloudinaryService->uploadImage($file->getPathname());
 
         return response()->json($uploadResponse);

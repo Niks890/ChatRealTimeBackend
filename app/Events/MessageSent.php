@@ -43,6 +43,7 @@ class MessageSent implements ShouldBroadcast
             'created_at' => $this->message['created_at'],
             'file_path' => $this->message['file_path'],
             'type' => $this->message['type'],
+            'messageType' => $this->message['messageType'],
         ];
     }
 }
