@@ -20,3 +20,7 @@ use Illuminate\Support\Facades\Broadcast;
 Broadcast::channel('chat', function ($user) {
     return true; // hoặc kiểm tra quyền truy cập
 });
+
+Broadcast::channel('chat-group', function ($user) {
+    return true;
+});

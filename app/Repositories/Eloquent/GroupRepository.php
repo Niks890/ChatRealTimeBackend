@@ -3,7 +3,10 @@
 namespace App\Repositories\Eloquent;
 
 use App\Models\Group;
+use App\Models\GroupMember;
 use App\Repositories\Contracts\GroupRepositoryInterface;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class GroupRepository implements GroupRepositoryInterface
@@ -47,5 +50,57 @@ class GroupRepository implements GroupRepositoryInterface
         }
 
         return $group->id;
+    }
+
+    public function createGroup(array $data)
+    {
+        DB::beginTransaction();
+
+        try {
+            // Tạo nhóm mới
+            $group = Group::create([
+                'name' => $data['name'],
+                'created_by' => $data['admin'],
+                'is_private' => false,
+            ]);
+
+            // Lấy danh sách thành viên và thêm admin nếu chưa có
+            $memberIds = $data['members'];
+
+            // Kiểm tra nếu admin chưa có trong danh sách thành viên thì thêm vào
+            if (!in_array($data['admin'], $memberIds)) {
+                $memberIds[] = $data['admin'];
+            }
+
+            // Tạo các đối tượng GroupMember từ danh sách memberIds
+            $members = [];
+            foreach ($memberIds as $userId) {
+                $role = ($userId == $data['admin']) ? 'admin' : 'member'; // Kiểm tra nếu là admin thì gán role admin
+                $members[] = new GroupMember([
+                    'user_id' => $userId,
+                    'role' => $role // Gán role cho từng thành viên
+                ]);
+            }
+
+            // Lưu tất cả thành viên vào bảng liên kết
+            $group->members()->saveMany($members);
+
+            DB::commit();
+
+            return $group->id;
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
+    }
+
+    public function getGroupOfUser($currentUserId = null)
+    {
+        return Group::whereHas('members', function ($query) use ($currentUserId) {
+            $query->where('user_id', $currentUserId);
+        })
+            ->where('is_private', false)
+            ->withCount('members')
+            ->get();
     }
 }

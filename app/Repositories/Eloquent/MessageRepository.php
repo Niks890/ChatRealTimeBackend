@@ -19,4 +19,15 @@ class MessageRepository implements MessageRepositoryInterface
             ->orderBy('created_at')
             ->get();
     }
+
+
+    public function getAllMessageGroupOfUser($groupId)
+    {
+        return Message::with('sender')
+            ->where('group_id', $groupId)
+            ->whereHas('group.members')
+            ->orderBy('created_at')
+            ->distinct()
+            ->get();
+    }
 }

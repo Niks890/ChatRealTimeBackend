@@ -57,12 +57,21 @@ Route::post('/email/resend', function (Request $request) {
 })->middleware(['auth:api']);
 
 Route::post('/send-message', [MessageSentController::class, 'sendMessage']);
-Route::post('/upload', [CloudinaryUploadController::class, 'upload'])->name('api.upload');
+Route::post('/send-message-group', [MessageSentController::class, 'sendMessageGroup']);
 
+Route::post('/upload', [CloudinaryUploadController::class, 'upload'])->name('api.upload');
+//GROUP
+Route::get('/groups', [GroupController::class, 'getAllGroupOfUsers'])->name('api.groups');
 //USER API
 Route::get('/users', [UserController::class, 'getAllUsersExceptCurrentUser'])->name('api.users');
+Route::get('/search-users', [UserController::class, 'getUserByKeyWord'])->name('api.search_users');
 
 
 //MESSAGE API
 Route::post('/messages', [MessageController::class, 'getAllMessageOfTwoUser'])->name('api.messages');
 Route::post('/group-id', [GroupController::class, 'getGroupId'])->name('api.group-id');
+Route::post('/create-group', [GroupController::class, 'createGroup'])->name('api.create-group');
+Route::post('/message-group', [MessageController::class, 'getAllMessageGroup'])->name('api.message-group');
+
+
+

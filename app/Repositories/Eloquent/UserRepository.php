@@ -4,13 +4,17 @@ namespace App\Repositories\Eloquent;
 
 use App\Models\User;
 use App\Repositories\Contracts\UserRepositoryInterface;
+use Illuminate\Support\Facades\Log;
 
 class UserRepository implements UserRepositoryInterface
 {
+
+
     public function all($currentUserId = null)
-    {
-        return User::where('id', '!=', $currentUserId)->get();
-    }
+{
+    // Log::info('Current user ID in all():', ['id' => $currentUserId]);
+    return User::where('id', '!=', $currentUserId)->get();
+}
 
     public function find($id)
     {
@@ -33,15 +37,11 @@ class UserRepository implements UserRepositoryInterface
         return User::destroy($id);
     }
 
-    // app/Http/Controllers/UserController.php
-    // public function ping()
-    // {
-    //     $user = auth('api')->user();
-    //     if ($user) {
-    //         $user->update(['last_seen' => now()]);
-    //         return response()->json(['message' => 'Ping updated']);
-    //     }
+    public function searchUsers($keyword)
+    {
+        return User::where('name', 'like', '%' . $keyword . '%')
+            ->orWhere('email', 'like', '%' . $keyword . '%')
+            ->get();
+    }
 
-    //     return response()->json(['message' => 'User not found'], 404);
-    // }
 }

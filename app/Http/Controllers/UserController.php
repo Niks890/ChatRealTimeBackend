@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Repositories\Contracts\UserRepositoryInterface;
+use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
@@ -15,13 +16,15 @@ class UserController extends Controller
 
     public function getAllUsersExceptCurrentUser()
     {
-        $currentUserId = auth()->id();
+        $currentUserId = auth('api')->id();
         $users = $this->userRepo->all($currentUserId);
         return $this->apiStatus($users, 200, $users->count());
     }
 
-    // public function pingToUser()
-    // {
-    //     return $this->userRepo->ping();
-    // }
+    public function getUserByKeyWord(Request $request)
+    {
+        $keyword = $request->input('keyword');
+        $users = $this->userRepo->searchUsers($keyword);
+        return $this->apiStatus($users, 200, $users->count());
+    }
 }
